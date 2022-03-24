@@ -35,11 +35,15 @@ def coordinates(road, line_parameters):
 def display_lines(road, lines):
     line_road = np.zeros_like(road)
     # if the approximated line isn't None, for each x1, y1, x2, y2 of lines, draw line
+    sum = 0
     if lines is not None:
         for line in lines:
             # draws a line cv.line(img, first point, second point, color, thickness)
             x1, y1, x2, y2 = line.reshape(4)
             cv.line(line_road, (x1, y1), (x2, y2), (248, 210, 21), 3)
+            sum += (x1 + x2)/2
+    average = sum/len(lines)
+    #average is the middle of all the lines - used for finding direction
 
     return line_road
 
@@ -51,7 +55,7 @@ def ROI(road):
     start_x = 200
     end_x = 1100
     midpoint_x = int((start_x + end_x) / 2)
-    depth = 69
+    depth = -170
     # creates the triangle
     polygons = np.array([
     [(start_x, height), (end_x, height), (midpoint_x, depth)]
