@@ -42,10 +42,10 @@ def display_lines(road, lines):
             x1, y1, x2, y2 = line.reshape(4)
             cv.line(line_road, (x1, y1), (x2, y2), (248, 210, 21), 3)
             sum += (x1 + x2)/2
-    average = sum/len(lines)
+    adjust = (sum/len(lines) - 600)/600
     #average is the middle of all the lines - used for finding direction
 
-    return line_road
+    return [line_road, adjust]
 
 
 ## specifies the Region of Interest in the road
@@ -69,33 +69,27 @@ def ROI(road):
 
 
 
-## Variables
-# Road image
-road = cv.imread("Photos/road1.jpg")
-# Returns an array copy of the road
-road_np = np.copy(road)
-# calls take_canny to get canny_road
-canny = take_canny(road)
-# calls ROI to get the cropped_road image
-cropped_road = ROI(canny)
-# Hough Space for slope prediction
-lines = cv.HoughLinesP(cropped_road, rho = 2, theta = np.pi/180, threshold=120, minLineLength = 150, maxLineGap = 80)
-# displays approximated lines
-line_road = display_lines(road_np, lines)
-# combination of road and the line prediction image
-# cv.addWeighted(1st img, transparency of the 1st img, 2nd img)
-combine_road = cv.addWeighted(road_np, 0.4, line_road, 1, 1)
-
-# Averaged slope of the lines
-#avg_lines = avg_slope_intercept(road, lines)
+def find_road(image):
+    # Road image
+    road = cv.imread(image)
+    # Returns an array copy of the road
+    road_np = np.copy(road)
+    # calls take_canny to get canny_road
+    canny = take_canny(road)
+    # calls ROI to get the cropped_road image
+    cropped_road = ROI(canny)
+    # Hough Space for slope prediction
+    lines = cv.HoughLinesP(cropped_road, rho = 2, theta = np.pi/180, threshold=120, minLineLength = 150, maxLineGap = 80)
+    # displays approximated lines
+    line_road, adjust = display_lines(road_np, lines)
+    # combination of road and the line prediction image
+    # cv.addWeighted(1st img, transparency of the 1st img, 2nd img)
+    return [cv.addWeighted(road_np, 0.4, line_road, 1, 1), adjust]
 
 
-## Call
-cv.imshow('road', combine_road)
-cv.waitKey(0)
-
-## Matplot for coordinates
-# plt.imshow(canny)
-# plt.show()
-
-# road image numpy vectors: (200, 963) to (1100, 963)
+##The following lines can be uncommented for testing purposes
+##View detected lines and adjust value:
+##combine_road, adjust = find_road("Photos/road1.jpg")
+##cv.imshow('road', combine_road)
+##print(adjust)
+##cv.waitKey(0)
